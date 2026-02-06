@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBT Sekolah - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== CSS STYLES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 35px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .logo i {
+            font-size: 2.8rem;
+            color: #667eea;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group label i {
+            color: #667eea;
+            width: 20px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Button Styles */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Demo Accounts */
+        .demo-accounts {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .demo-accounts h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .demo-accounts h4 i {
+            color: #667eea;
+        }
+
+        .account-list div {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+
+        .account-list div:last-child {
+            border-bottom: none;
+        }
+
+        .account-list strong {
+            color: #667eea;
+            min-width: 60px;
+            display: inline-block;
+        }
+
+        /* Loading Spinner */
+        .hidden {
+            display: none !important;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        #apiStatusIcon {
+            font-size: 0.6rem;
+        }
+
+        /* Message Box */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .message.success {
+            background: linear-gradient(to right, #4CAF50, #45a049);
+        }
+
+        .message.error {
+            background: linear-gradient(to right, #f44336, #d32f2f);
+        }
+
+        .message.info {
+            background: linear-gradient(to right, #2196F3, #1976D2);
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h1>CBT Sekolah</h1>
+                </div>
+                <p class="subtitle">Sistem Computer Based Test</p>
+            </div>
+            
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <input type="email" id="email" placeholder="masukan email" value="siswa1@sekolah.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="password" placeholder="masukan password" value="siswa123">
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">
+                        <i class="fas fa-user-tag"></i> Login Sebagai
+                    </label>
+                    <select id="role">
+                        <option value="siswa">Siswa</option>
+                        <option value="guru">Guru</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <button id="loginBtn" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+                
+                <div class="demo-accounts">
+                    <h4><i class="fas fa-info-circle"></i> Akun Demo:</h4>
+                    <div class="account-list">
+                        <div><strong>Siswa:</strong> siswa1@sekolah.com / siswa123</div>
+                        <div><strong>Guru:</strong> guru1@sekolah.com / guru123</div>
+                        <div><strong>Admin:</strong> admin@sekolah.com / admin123</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="loading" class="hidden">
+                <div class="spinner"></div>
+                <p>Sedang memproses...</p>
+            </div>
+            
+            <div class="footer">
+                <p>© 2026 CBT Sekolah v3.0.0</p>
+                <p class="api-status">
+                    <i class="fas fa-circle" id="apiStatusIcon"></i>
+                    <span id="apiStatus">Mengecek API...</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="message" class="message hidden"></div>
+
+                <script>
+        // ========== JAVASCRIPT CODE ==========
+        
+        // URL BARU - sudah benar!
+        const API_URL = "https://script.google.com/macros/s/AKfycbxLYZr83ygZF28ERZ8hRvuqprCEF4t3qA2Yqcus4w8Z2HR87tKXplO4k5rq8XeWxaeRhQ/exec";
+        
+        // DOM Elements
+        const loginBtn = document.getElementById('loginBtn');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const roleSelect = document.getElementById('role');
+        const loginForm = document.getElementById('loginForm');
+        const loadingDiv = document.getElementById('loading');
+        const messageDiv = document.getElementById('message');
+        const apiStatusIcon = document.getElementById('apiStatusIcon');
+        const apiStatusText = document.getElementById('apiStatus');
+        
+        // Show message
+        function showMessage(text, type = 'info') {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Show/hide loading
+        function showLoading(show) {
+            if (show) {
+                loginForm.classList.add('hidden');
+                loadingDiv.classList.remove('hidden');
+            } else {
+                loadingDiv.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            }
+        }
+        
+        // Check API status
+        function checkAPIStatus() {
+            apiStatusIcon.style.color = '#4CAF50';
+            apiStatusText.textContent = 'API Online ✓';
+        }
+        
+        // SIMPLE WORKING LOGIN FUNCTION
+        async function handleLogin() {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!email || !password) {
+                showMessage('Email dan password harus diisi', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            // Data untuk dikirim
+            const postData = {
+                action: 'login',
+                email: email,
+                password: password
+            };
+            
+            console.log('Mengirim data:', postData);
+            
+            try {
+                // CARA SEDERHANA YANG PASTI BEKERJA
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+                
+                console.log('Response status:', response.status, response.statusText);
+                
+                // Baca response text dulu
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                // Coba parse JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Parse error:', parseError);
+                    showMessage('Format response tidak valid', 'error');
+                    showLoading(false);
+                    return;
+                }
+                
+                console.log('Parsed result:', result);
+                
+                if (result.success) {
+                    // LOGIN BERHASIL!
+                    showMessage(`🎉 Login berhasil! Selamat datang ${result.data.nama}`, 'success');
+                    
+                    // Simpan data user
+                    localStorage.setItem('cbt_user', JSON.stringify(result.data));
+                    
+                    // Tampilkan dashboard sederhana
+                    setTimeout(() => {
+                        showSimpleDashboard(result.data);
+                    }, 1500);
+                    
+                } else {
+                    showMessage(`❌ ${result.error}`, 'error');
+                    showLoading(false);
+                }
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showMessage('Gagal terhubung ke server. Coba lagi.', 'error');
+                showLoading(false);
+            }
+        }
+        
+        // Simple dashboard
+        function showSimpleDashboard(userData) {
+            document.body.innerHTML = `
+                <style>
+                    .dashboard-container {
+                        max-width: 800px;
+                        margin: 40px auto;
+                        padding: 30px;
+                        background: white;
+                        border-radius: 20px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    }
+                    .success-header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }
+                    .success-icon {
+                        font-size: 4rem;
+                        color: #4CAF50;
+                        margin-bottom: 20px;
+                    }
+                    .user-info {
+                        background: #f8f9fa;
+                        padding: 25px;
+                        border-radius: 15px;
+                        margin: 25px 0;
+                    }
+                    .btn {
+                        padding: 14px 28px;
+                        border: none;
+                        border-radius: 12px;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin: 10px;
+                        transition: all 0.3s;
+                    }
+                    .btn-primary {
+                        background: linear-gradient(to right, #667eea, #764ba2);
+                        color: white;
+                    }
+                    .btn-secondary {
+                        background: #6c757d;
+                        color: white;
+                    }
+                    .btn:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+                    }
+                    .menu-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 20px;
+                        margin-top: 30px;
+                    }
+                </style>
+                
+                <div class="dashboard-container">
+                    <div class="success-header">
+                        <div class="success-icon">🎓</div>
+                        <h1 style="color: #4CAF50;">Login Berhasil!</h1>
+                        <p style="color: #666;">Selamat datang di CBT Sekolah</p>
+                    </div>
+                    
+                    <div class="user-info">
+                        <h2>👋 ${userData.nama}</h2>
+                        <p><strong>Role:</strong> ${userData.role.toUpperCase()}</p>
+                        <p><strong>Email:</strong> ${userData.email}</p>
+                        <p><strong>Kelas:</strong> ${userData.kelas || 'Tidak tersedia'}</p>
+                        <p><strong>Login Time:</strong> ${new Date().toLocaleString('id-ID')}</p>
+                    </div>
+                    
+                    <h3>🎯 Menu Utama:</h3>
+                    <div class="menu-grid">
+                        ${userData.role === 'siswa' ? `
+                            <button class="btn btn-primary" onclick="getUjianList('${userData.kelas}')">
+                                📝 Lihat Ujian
+                            </button>
+                            <button class="btn btn-primary" onclick="testGetUjian()">
+                                🧪 Test Ujian
+                            </button>
+                        ` : ''}
+                        
+                        ${userData.role === 'guru' ? `
+                            <button class="btn btn-primary">
+                                📤 Upload Soal
+                            </button>
+                            <button class="btn btn-primary">
+                                📋 Buat Ujian
+                            </button>
+                        ` : ''}
+                        
+                        ${userData.role === 'admin' ? `
+                            <button class="btn btn-primary">
+                                👥 Manage Users
+                            </button>
+                            <button class="btn btn-primary">
+                                ⚙️ Settings
+                            </button>
+                        ` : ''}
+                        
+                        <button class="btn btn-secondary" onclick="testAPIConnection()">
+                            🔗 Test API
+                        </button>
+                        
+                        <button class="btn btn-secondary" onclick="location.reload()">
+                            ↩️ Logout
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 40px; color: #666; font-size: 0.9rem;">
+                        <p>API Status: <span style="color: #4CAF50; font-weight: bold;">ONLINE ✓</span></p>
+                        <p>Backend: Google Apps Script v3.0.0</p>
+                    </div>
+                </div>
+            `;
+            
+            // Attach functions ke window
+            window.getUjianList = async function(kelas) {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'getUjianAktif', kelas: kelas })
+                    });
+                    const result = await response.json();
+                    alert(`Ujian ditemukan: ${result.data ? result.data.length : 0}\n${JSON.stringify(result, null, 2)}`);
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            };
+            
+            window.testGetUjian = async function() {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'getUjianAktif', kelas: 'X IPA 1' })
+                    });
+                    const result = await response.json();
+                    alert(`Test Ujian: ${result.success ? 'SUCCESS' : 'FAILED'}\n${result.message || ''}`);
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            };
+            
+            window.testAPIConnection = function() {
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'login', email: 'siswa1@sekolah.com', password: 'siswa123' })
+                })
+                .then(r => r.json())
+                .then(data => alert(`API Test: ${data.success ? 'SUCCESS 👍' : 'FAILED 👎'}\n${data.data ? 'User: ' + data.data.nama : data.error}`))
+                .catch(err => alert('API Error: ' + err.message));
+            };
+        }
+        
+        // Event Listeners
+        loginBtn.addEventListener('click', handleLogin);
+        
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+        
+        // Auto-select role
+        emailInput.addEventListener('blur', () => {
+            const email = emailInput.value.trim().toLowerCase();
+            if (email.includes('siswa')) roleSelect.value = 'siswa';
+            else if (email.includes('guru')) roleSelect.value = 'guru';
+            else if (email.includes('admin')) roleSelect.value = 'admin';
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAPIStatus();
+            
+            // Demo accounts click
+            document.querySelectorAll('.account-list div').forEach(account => {
+                account.style.cursor = 'pointer';
+                account.style.padding = '12px';
+                account.style.borderRadius = '8px';
+                account.style.transition = 'all 0.3s';
+                
+                account.addEventListener('mouseenter', () => {
+                    account.style.background = '#f0f0f0';
+                    account.style.transform = 'translateX(5px)';
+                });
+                
+                account.addEventListener('mouseleave', () => {
+                    account.style.background = '';
+                    account.style.transform = '';
+                });
+                
+                account.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const text = account.textContent;
+                    
+                    // Parse: "Siswa: siswa1@sekolah.com / siswa123"
+                    const parts = text.split(':');
+                    if (parts.length > 1) {
+                        const credentials = parts[1].trim().split('/');
+                        if (credentials.length === 2) {
+                            const email = credentials[0].trim();
+                            const password = credentials[1].trim();
+                            
+                            emailInput.value = email;
+                            passwordInput.value = password;
+                            
+                            // Auto-select role
+                            const emailLower = email.toLowerCase();
+                            if (emailLower.includes('siswa')) roleSelect.value = 'siswa';
+                            else if (emailLower.includes('guru')) roleSelect.value = 'guru';
+                            else if (emailLower.includes('admin')) roleSelect.value = 'admin';
+                            
+                            showMessage('Akun demo diisi otomatis ✅', 'info');
+                        }
+                    }
+                });
+            });
+            
+            // Auto-fill for quick testing (after 1 second)
+            setTimeout(() => {
+                if (!emailInput.value) {
+                    emailInput.value = 'siswa1@sekolah.com';
+                    passwordInput.value = 'siswa123';
+                    roleSelect.value = 'siswa';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
