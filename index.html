@@ -401,30 +401,44 @@
             console.log('Mengirim data:', postData);
             
             try {
-                // CARA SEDERHANA YANG PASTI BEKERJA
+                // METHOD 1: Try with JSON
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(postData)
+                    body: JSON.stringify(postData),
+                    mode: 'cors'
                 });
                 
                 console.log('Response status:', response.status, response.statusText);
                 
-                // Baca response text dulu
-                const responseText = await response.text();
-                console.log('Raw response:', responseText);
-                
-                // Coba parse JSON
+                // Check if response is HTML (CORS workaround)
+                const contentType = response.headers.get('content-type');
                 let result;
-                try {
+                
+                if (contentType && contentType.includes('text/html')) {
+                    // Google Apps Script returned HTML with embedded JSON
+                    const html = await response.text();
+                    console.log('Got HTML response, extracting JSON...');
+                    
+                    // Extract JSON from script tag
+                    const match = html.match(/const data = ({.*?});/s);
+                    if (match && match[1]) {
+                        result = JSON.parse(match[1]);
+                    } else {
+                        // Try to find JSON in the response
+                        const jsonMatch = html.match(/{.*}/s);
+                        if (jsonMatch) {
+                            result = JSON.parse(jsonMatch[0]);
+                        } else {
+                            throw new Error('Could not extract JSON from response');
+                        }
+                    }
+                } else {
+                    // Regular JSON response
+                    const responseText = await response.text();
                     result = JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('Parse error:', parseError);
-                    showMessage('Format response tidak valid', 'error');
-                    showLoading(false);
-                    return;
                 }
                 
                 console.log('Parsed result:', result);
@@ -436,9 +450,9 @@
                     // Simpan data user
                     localStorage.setItem('cbt_user', JSON.stringify(result.data));
                     
-                    // Tampilkan dashboard sederhana
+                    // Redirect to dashboard
                     setTimeout(() => {
-                        showSimpleDashboard(result.data);
+                        window.location.href = 'dashboard.html?user=' + encodeURIComponent(JSON.stringify(result.data));
                     }, 1500);
                     
                 } else {
@@ -448,10 +462,45 @@
                 
             } catch (error) {
                 console.error('Fetch error:', error);
-                showMessage('Gagal terhubung ke server. Coba lagi.', 'error');
-                showLoading(false);
+                
+                // METHOD 2: Try form submission
+                showMessage('Mencoba metode alternatif...', 'info');
+                
+                try {
+                    const formData = new URLSearchParams();
+                    formData.append('action', 'login');
+                    formData.append('email', email);
+                    formData.append('password', password);
+                    
+                    const response2 = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData,
+                        mode: 'cors'
+                    });
+                    
+                    const result2 = await response2.json();
+                    
+                    if (result2.success) {
+                        showMessage(`🎉 Login berhasil! ${result2.data.nama}`, 'success');
+                        localStorage.setItem('cbt_user', JSON.stringify(result2.data));
+                        
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html?user=' + encodeURIComponent(JSON.stringify(result2.data));
+                        }, 1500);
+                    } else {
+                        showMessage(result2.error || 'Login gagal', 'error');
+                        showLoading(false);
+                    }
+                    
+                } catch (error2) {
+                    console.error('Fallback error:', error2);
+                    showMessage('Server sedang maintenance. Coba lagi nanti.', 'error');
+                    showLoading(false);
+                }
             }
-        }
         
         // Simple dashboard
         function showSimpleDashboard(userData) {
