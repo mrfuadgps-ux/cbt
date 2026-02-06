@@ -184,7 +184,7 @@
             showMessage('Akun demo diisi otomatis', 'info');
         }
         
-        async function handleLogin() {
+                async function handleLogin() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             
@@ -194,104 +194,110 @@
             }
             
             // Show loading
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('loading').classList.remove('hidden');
+            const loginForm = document.getElementById('loginForm');
+            const loading = document.getElementById('loading');
+            loginForm.style.display = 'none';
+            loading.style.display = 'block';
             
-            try {
-                // Method 1: Try JSON
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'login',
-                        email: email,
-                        password: password
-                    })
-                });
+            console.log('Attempting login for:', email);
+            
+            // METHOD 1: JSONP Workaround (Google Apps Script compatible)
+            const callbackName = 'cbtLoginCallback' + Date.now();
+            const script = document.createElement('script');
+            
+            // Create callback function
+            window[callbackName] = function(response) {
+                console.log('JSONP Response:', response);
                 
-                console.log('Response:', response);
+                // Clean up
+                document.body.removeChild(script);
+                delete window[callbackName];
                 
-                let result;
-                const text = await response.text();
-                console.log('Response text:', text);
-                
-                try {
-                    result = JSON.parse(text);
-                } catch (e) {
-                    // Try to extract JSON from HTML
-                    const match = text.match(/{.*}/s);
-                    if (match) {
-                        result = JSON.parse(match[0]);
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
-                }
-                
-                console.log('Parsed result:', result);
-                
-                if (result.success) {
-                    showMessage(`Login berhasil! Selamat datang ${result.data.nama}`, 'success');
+                if (response && response.success) {
+                    // LOGIN BERHASIL!
+                    showMessage(`🎉 Login berhasil! Selamat datang ${response.data.nama}`, 'success');
                     
                     // Show success page
-                    document.body.innerHTML = `
-                        <div class="container">
-                            <div class="login-box">
-                                <h1 style="color: #4CAF50;">🎉 Login Berhasil!</h1>
-                                <p>Welcome, ${result.data.nama}!</p>
-                                <p>Role: ${result.data.role}</p>
-                                <p>Email: ${result.data.email}</p>
-                                <p>Kelas: ${result.data.kelas || '-'}</p>
-                                <button onclick="location.reload()" style="margin-top: 20px;">
-                                    Kembali ke Login
-                                </button>
+                    setTimeout(() => {
+                        document.body.innerHTML = `
+                            <div class="container">
+                                <div class="login-box">
+                                    <h1 style="color: #4CAF50;">🎉 Login Berhasil!</h1>
+                                    <p>Welcome, ${response.data.nama}!</p>
+                                    <p>Role: ${response.data.role}</p>
+                                    <p>Email: ${response.data.email}</p>
+                                    <p>Kelas: ${response.data.kelas || '-'}</p>
+                                    <button onclick="location.reload()" style="margin-top: 20px;">
+                                        Kembali ke Login
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    }, 1500);
                     
                 } else {
-                    showMessage(result.error || 'Login gagal', 'error');
-                    document.getElementById('loginForm').classList.remove('hidden');
-                    document.getElementById('loading').classList.add('hidden');
+                    showMessage(response.error || 'Login gagal', 'error');
+                    loginForm.style.display = 'block';
+                    loading.style.display = 'none';
                 }
+            };
+            
+            // Create JSONP URL
+            const jsonpUrl = `${API_URL}?callback=${callbackName}&action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+            script.src = jsonpUrl;
+            
+            // Add error handling
+            script.onerror = function() {
+                console.error('JSONP failed, trying fallback...');
+                document.body.removeChild(script);
+                delete window[callbackName];
                 
-            } catch (error) {
-                console.error('Login error:', error);
-                showMessage('Gagal terhubung ke server', 'error');
-                document.getElementById('loginForm').classList.remove('hidden');
-                document.getElementById('loading').classList.add('hidden');
-            }
+                // Fallback to form submission
+                tryFormSubmission(email, password, loginForm, loading);
+            };
+            
+            // Add to page
+            document.body.appendChild(script);
         }
         
-        // Event listeners
-        document.getElementById('loginBtn').addEventListener('click', handleLogin);
-        
-        document.getElementById('password').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleLogin();
-        });
-        
-        // Check API status
-        async function checkAPI() {
-            try {
-                const response = await fetch(API_URL + '?test=1');
-                document.getElementById('apiStatus').textContent = 'API Online ✓';
-                document.getElementById('apiStatus').style.color = '#4CAF50';
-            } catch (error) {
-                document.getElementById('apiStatus').textContent = 'API Offline ✗';
-                document.getElementById('apiStatus').style.color = '#f44336';
-            }
+        // Fallback method
+        function tryFormSubmission(email, password, loginForm, loading) {
+            showMessage('Mencoba metode alternatif...', 'info');
+            
+            // Create hidden form
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = API_URL;
+            form.target = '_blank';
+            form.style.display = 'none';
+            
+            // Add hidden fields
+            const actionInput = document.createElement('input');
+            actionInput.name = 'action';
+            actionInput.value = 'login';
+            
+            const emailInput = document.createElement('input');
+            emailInput.name = 'email';
+            emailInput.value = email;
+            
+            const passwordInput = document.createElement('input');
+            passwordInput.name = 'password';
+            passwordInput.value = password;
+            
+            form.appendChild(actionInput);
+            form.appendChild(emailInput);
+            form.appendChild(passwordInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+            
+            // Reset form after 5 seconds
+            setTimeout(() => {
+                loginForm.style.display = 'block';
+                loading.style.display = 'none';
+                document.body.removeChild(form);
+            }, 5000);
         }
-        
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAPI();
-        });
-        
-        // Auto-fill for quick testing
-        setTimeout(() => {
-            if (!document.getElementById('email').value) {
-                fillCredentials('siswa1@sekolah.com', 'siswa123', 'siswa');
-            }
-        }, 500);
     </script>
 </body>
 </html>
